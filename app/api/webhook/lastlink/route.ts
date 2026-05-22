@@ -32,48 +32,82 @@ const supabaseAdmin = createClient(
 )
 
 export async function POST(req: NextRequest) {
-  // Verificar assinatura da Lastlink (opcional - descomente em produção)
-  // const secret = process.env.LASTLINK_SECRET
-  // if (secret) {
-  //   const signature = req.headers.get('x-lastlink-signature') || ''
-  //   if (signature !== secret) {
-  //     console.error('[Webhook] Assinatura inválida')
-  //     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  //   }
-  // }
+  // Log headers para debug
+  const headers: Record<string, string> = {}
+  req.headers.forEach((value, key) => {
+    headers[key] = value
+  })
+  console.log('[Webhook] Headers:', JSON.stringify(headers))
 
   // Parsear payload
   let payload: any
   try {
-    payload = await req.json()
-  } catch {
+    const rawBody = await req.text()
+    console.log('[Webhook] Raw body:', rawBody)
+    payload = JSON.parse(rawBody)
+  } catch (err) {
+    console.error('[Webhook] Erro ao parsear JSON:', err)
     return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 })
   }
 
-  console.log('[Webhook] Recebido:', JSON.stringify(payload))
+  console.log('[Webhook] Payload completo:', JSON.stringify(payload, null, 2))
 
-  // Ignorar eventos que não são de pagamento confirmado
-  const evento = payload.event || payload.status || ''
-  if (!['purchase.approved', 'payment.approved', 'approved'].includes(evento)) {
+  // Ignorar eventos que nao sao de pagamento confirmado
+  // Lastlink pode enviar: approved, paid, completed, etc.
+  const evento = (
+    payload.event || 
+    payload.status || 
+    payload.transaction?.status ||
+    payload.payment?.status ||
+    ''
+  ).toLowerCase()
+  
+  console.log('[Webhook] Evento detectado:', evento)
+  
+  const eventosValidos = ['purchase.approved', 'payment.approved', 'approved', 'paid', 'completed', 'active']
+  if (!eventosValidos.some(e => evento.includes(e))) {
     console.log('[Webhook] Evento ignorado:', evento)
-    return NextResponse.json({ ok: true, msg: 'evento ignorado' })
+    return NextResponse.json({ ok: true, msg: 'evento ignorado: ' + evento })
   }
 
-  // Extrair dados do payload
-  // Adaptar conforme estrutura real da Lastlink
+  // Extrair dados do payload - varios formatos possiveis da Lastlink
+  // Formato principal: Data.Buyer.Email, Data.Product.Id
   const email = (
+    payload.Data?.Buyer?.Email ||
+    payload.data?.buyer?.email ||
+    payload.Data?.Customer?.Email ||
+    payload.data?.customer?.email ||
     payload.customer?.email ||
     payload.buyer?.email ||
+    payload.subscriber?.email ||
+    payload.user?.email ||
     payload.email ||
+    payload.transaction?.customer?.email ||
     ''
   ).toLowerCase().trim()
 
+  // Product ID pode estar em varios lugares
+  // Lastlink usa o codigo do produto (ex: CA6FD38F4) 
   const productId = (
+    payload.Data?.Product?.Id ||
+    payload.Data?.Product?.Code ||
+    payload.data?.product?.id ||
+    payload.data?.product?.code ||
+    payload.Data?.Offer?.Code ||
+    payload.data?.offer?.code ||
     payload.product?.id ||
+    payload.product?.code ||
     payload.product_id ||
+    payload.product_code ||
     payload.item?.id ||
+    payload.offer?.id ||
+    payload.offer?.code ||
+    payload.transaction?.product?.id ||
     ''
   ).toString()
+
+  console.log('[Webhook] Email extraido:', email)
+  console.log('[Webhook] Product ID extraido:', productId)
 
   if (!email || !productId) {
     console.error('[Webhook] Email ou productId ausente', { email, productId })
