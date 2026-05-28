@@ -1,22 +1,45 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import { useAppState } from '@/lib/context'
 import { archetypes } from '@/lib/data'
+import { supabase } from '@/lib/supabase'
 import { useRouter } from 'next/navigation'
+import { Shield } from 'lucide-react'
 
 export function ProfileScreen() {
   const { state, user, logout } = useAppState()
   const router = useRouter()
   const arq = archetypes[state.arq]
+  const [isAdmin, setIsAdmin] = useState(false)
 
   const level = Math.floor(state.xp / 100) + 1
   const xpToNext = 100 - (state.xp % 100)
   const daysCompleted = state.done.length
   const daysRemaining = 7 - daysCompleted
 
+  // Verificar se é admin
+  useEffect(() => {
+    const checkAdmin = async () => {
+      if (!user?.email) return
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('is_admin')
+        .eq('email', user.email.toLowerCase())
+        .single()
+      
+      setIsAdmin(profile?.is_admin === true)
+    }
+    checkAdmin()
+  }, [user?.email])
+
   const handleLogout = async () => {
     await logout()
     router.push('/')
+  }
+
+  const handleOpenAdmin = () => {
+    router.push('/admin')
   }
 
   return (
@@ -111,6 +134,17 @@ export function ProfileScreen() {
           <div className="text-[12px] text-[var(--muted)] mb-1">Email</div>
           <div className="text-[14px] text-[var(--white)]">{user?.email || state.email}</div>
         </div>
+
+        {/* Botao Admin - apenas para admins */}
+        {isAdmin && (
+          <button
+            onClick={handleOpenAdmin}
+            className="w-full py-3 mb-3 text-[13px] font-semibold text-[var(--gold)] bg-transparent border border-[rgba(212,164,90,0.3)] rounded-xl cursor-pointer transition-all duration-200 hover:bg-[rgba(212,164,90,0.1)] flex items-center justify-center gap-2"
+          >
+            <Shield className="w-4 h-4" />
+            Painel Administrativo
+          </button>
+        )}
 
         <button
           onClick={handleLogout}
