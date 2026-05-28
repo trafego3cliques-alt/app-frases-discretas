@@ -18,9 +18,17 @@ export function DashboardScreen({ onOpenDay, onShowUpsell, onOpenModule, onOpenB
   const xpPct = Math.min((state.xp / 700) * 100, 100)
   const level = Math.floor(state.xp / 100) + 1
 
+  // Debug logs
+  console.log('[v0] Dashboard - unlockedModules:', state.unlockedModules)
+  console.log('[v0] Dashboard - purchasedUpsells:', state.purchasedUpsells)
+
   // Separate purchased modules from available upsells
-  const allUpsells = upsells[state.arq]
-  const purchasedModules = allUpsells.filter(u => hasModule(u.id))
+  const allUpsells = upsells[state.arq] || []
+  const purchasedModules = allUpsells.filter(u => {
+    const has = hasModule(u.id)
+    console.log('[v0] hasModule:', u.id, '=', has)
+    return has
+  })
   const availableUpsells = allUpsells.filter(
     u => !state.shownUpsells.includes(u.id) && 
          !hasModule(u.id) && 
