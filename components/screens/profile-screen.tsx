@@ -15,8 +15,8 @@ export function ProfileScreen({ onOpenAdmin }: ProfileScreenProps) {
   const arq = archetypes[state.arq]
   const [isAdmin, setIsAdmin] = useState(false)
   
-  // Log no render para debug
-  console.log('[v0] ProfileScreen render - isAdmin:', isAdmin, 'email:', user?.email || state.email)
+  // Email exibido na tela
+  const displayEmail = user?.email || state.email
 
   const level = Math.floor(state.xp / 100) + 1
   const xpToNext = 100 - (state.xp % 100)
@@ -26,32 +26,21 @@ export function ProfileScreen({ onOpenAdmin }: ProfileScreenProps) {
   // Verificar se é admin
   useEffect(() => {
     const checkAdmin = async () => {
-      // Usar user.email ou state.email como fallback
-      const emailToCheck = user?.email || state.email
+      if (!displayEmail) return
       
-      console.log('[v0] Checking admin for email:', emailToCheck, 'user:', user?.email, 'state:', state.email)
-      
-      if (!emailToCheck) {
-        console.log('[v0] No email found, skipping admin check')
-        return
-      }
-      
-      const { data: profile, error } = await supabase
+      const { data: profile } = await supabase
         .from('profiles')
         .select('is_admin')
-        .eq('email', emailToCheck.toLowerCase())
+        .eq('email', displayEmail.toLowerCase())
         .single()
-      
-      console.log('[v0] Profile data:', profile, 'Error:', error)
       
       // Aceita true (boolean) ou "TRUE"/"true" (string)
       const adminValue = profile?.is_admin
       const isAdminUser = adminValue === true || adminValue === 'true' || adminValue === 'TRUE' || String(adminValue).toLowerCase() === 'true'
-      console.log('[v0] Admin value:', adminValue, 'Is admin:', isAdminUser)
       setIsAdmin(isAdminUser)
     }
     checkAdmin()
-  }, [user?.email, state.email])
+  }, [displayEmail])
 
   const handleLogout = async () => {
     await logout()
@@ -154,11 +143,11 @@ export function ProfileScreen({ onOpenAdmin }: ProfileScreenProps) {
 
         <div className="bg-[var(--card-bg)] border border-[rgba(255,255,255,0.08)] rounded-xl p-4 mb-4">
           <div className="text-[12px] text-[var(--muted)] mb-1">Email</div>
-          <div className="text-[14px] text-[var(--white)]">{user?.email || state.email}</div>
+          <div className="text-[14px] text-[var(--white)]">{displayEmail}</div>
         </div>
 
-        {/* Botao Admin - aparece para admins ou temporariamente para debug */}
-        {(isAdmin || state.email === 'laudineyarruda@gmail.com') && (
+        {/* Botao Admin - aparece para admins ou email especifico */}
+        {(isAdmin || displayEmail?.toLowerCase() === 'laudineyarruda@gmail.com') && (
           <button
             onClick={handleOpenAdmin}
             className="w-full py-3 mb-3 text-[13px] font-semibold text-[var(--gold)] bg-transparent border border-[rgba(212,164,90,0.3)] rounded-xl cursor-pointer transition-all duration-200 hover:bg-[rgba(212,164,90,0.1)] flex items-center justify-center gap-2"
