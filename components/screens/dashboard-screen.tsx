@@ -29,11 +29,9 @@ export function DashboardScreen({ onOpenDay, onShowUpsell, onOpenModule, onOpenB
     console.log('[v0] hasModule:', u.id, '=', has)
     return has
   })
-  const availableUpsells = allUpsells.filter(
-    u => !state.shownUpsells.includes(u.id) && 
-         !hasModule(u.id) && 
-         state.done.length >= u.day - 1
-  )
+  
+  // Módulos bloqueados - mostrar todos que não foram desbloqueados
+  const lockedModules = allUpsells.filter(u => !hasModule(u.id))
 
   const getDayStatus = (day: number): 'done' | 'active' | 'locked' => {
     if (state.done.includes(day)) return 'done'
@@ -111,36 +109,38 @@ export function DashboardScreen({ onOpenDay, onShowUpsell, onOpenModule, onOpenB
           </>
         )}
 
-        {/* Available Upsells Section */}
+        {/* Locked Modules Section - mostrar todos os módulos bloqueados */}
         <div className="text-[11px] font-semibold tracking-[0.12em] uppercase text-[var(--rose)] mb-3 flex items-center gap-2">
           Modulos Extras
           <span className="flex-1 h-px bg-[rgba(200,80,106,0.15)]" />
         </div>
 
-        {availableUpsells.length > 0 ? (
-          availableUpsells.map(u => (
+        {lockedModules.length > 0 ? (
+          lockedModules.map(u => (
             <div 
               key={u.id}
               onClick={() => onShowUpsell(u.id)}
-              className="bg-gradient-to-br from-[rgba(212,164,90,0.1)] to-[rgba(200,80,106,0.06)] border border-[rgba(212,164,90,0.25)] rounded-xl p-4.5 mb-3 cursor-pointer transition-all duration-200 hover:border-[rgba(212,164,90,0.4)] hover:-translate-y-0.5"
+              className="bg-gradient-to-br from-[rgba(100,100,100,0.1)] to-[rgba(80,80,80,0.06)] border border-[rgba(255,255,255,0.1)] rounded-xl p-4.5 mb-3 cursor-pointer transition-all duration-200 hover:border-[rgba(255,255,255,0.2)] hover:-translate-y-0.5"
             >
-              <div className="text-[10px] font-semibold tracking-[0.1em] uppercase text-[var(--gold-l)] mb-2">
-                Modulo Extra disponivel
+              <div className="flex items-center gap-2 mb-2">
+                <span className="text-[10px] font-semibold tracking-[0.1em] uppercase text-[var(--muted)] bg-[rgba(255,255,255,0.08)] px-2 py-0.5 rounded">
+                  Bloqueado
+                </span>
               </div>
-              <div className="font-serif text-xl font-semibold text-[var(--white)] mb-1">
+              <div className="font-serif text-xl font-semibold text-[var(--muted)] mb-1">
                 {u.title}
               </div>
-              <div className="text-xs text-[var(--muted)] leading-[1.55] mb-2.5">
+              <div className="text-xs text-[var(--muted)] leading-[1.55] mb-2.5 opacity-70">
                 {u.sub}
               </div>
-              <div className="text-[13px] font-semibold text-[var(--gold-l)]">
-                Ver agora →
+              <div className="text-[13px] font-semibold text-[var(--muted)]">
+                Saiba mais →
               </div>
             </div>
           ))
         ) : (
           <div className="text-center py-4 text-[13px] text-[var(--muted)]">
-            Continue a jornada para desbloquear modulos extras.
+            Todos os modulos extras foram desbloqueados!
           </div>
         )}
 
