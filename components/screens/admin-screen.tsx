@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
 import { upsells, type ArchetypeKey } from '@/lib/data'
-import { ArrowLeft, Search, Check, X, Users, Package } from 'lucide-react'
+import { ArrowLeft, Search, Check, X, Users, Package, UserPlus } from 'lucide-react'
 
 interface UserData {
   id: string
@@ -36,6 +36,11 @@ export function AdminScreen({ onBack }: AdminScreenProps) {
   const [searchTerm, setSearchTerm] = useState('')
   const [isLoading, setIsLoading] = useState(true)
   const [updatingUser, setUpdatingUser] = useState<string | null>(null)
+  const [showAddUser, setShowAddUser] = useState(false)
+  const [newUserEmail, setNewUserEmail] = useState('')
+  const [newUserPassword, setNewUserPassword] = useState('')
+  const [addingUser, setAddingUser] = useState(false)
+  const [addUserError, setAddUserError] = useState('')
 
   useEffect(() => {
     loadUsers()
@@ -157,6 +162,62 @@ export function AdminScreen({ onBack }: AdminScreenProps) {
     user.email.toLowerCase().includes(searchTerm.toLowerCase())
   )
 
+  const handleAddUser = async () => {
+    if (!newUserEmail || !newUserPassword) {
+      setAddUserError('Preencha todos os campos')
+      return
+    }
+
+    if (newUserPassword.length < 6) {
+      setAddUserError('A senha deve ter pelo menos 6 caracteres')
+      return
+    }
+
+    setAddingUser(true)
+    setAddUserError('')
+
+    try {
+      // Criar usuário no Supabase Auth
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email: newUserEmail.toLowerCase().trim(),
+        password: newUserPassword,
+      })
+
+      if (authError) {
+        setAddUserError(authError.message)
+        setAddingUser(false)
+        return
+      }
+
+      // Criar perfil na tabela profiles
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .insert({
+          email: newUserEmail.toLowerCase().trim(),
+          created_at: new Date().toISOString(),
+          unlocked_modules: [],
+          is_admin: false
+        })
+
+      if (profileError && !profileError.message.includes('duplicate')) {
+        console.error('Erro ao criar perfil:', profileError)
+      }
+
+      // Recarregar lista
+      await loadUsers()
+
+      // Limpar campos
+      setNewUserEmail('')
+      setNewUserPassword('')
+      setShowAddUser(false)
+    } catch (err) {
+      console.error('Erro ao criar usuário:', err)
+      setAddUserError('Erro ao criar usuário')
+    }
+
+    setAddingUser(false)
+  }
+
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('pt-BR', {
       day: '2-digit',
@@ -216,6 +277,17 @@ export function AdminScreen({ onBack }: AdminScreenProps) {
               <div className="text-[11px] text-[var(--muted)]">Upsells</div>
             </div>
           </div>
+        </div>
+
+        {/* Botão Cadastrar Usuário */}
+        <div className="px-4 pb-4">
+          <button
+            onClick={() => setShowAddUser(true)}
+            className="w-full py-3 text-[13px] font-semibold text-[var(--gold)] bg-[rgba(212,164,90,0.1)] border border-[rgba(212,164,90,0.3)] rounded-xl cursor-pointer transition-all duration-200 hover:bg-[rgba(212,164,90,0.2)] flex items-center justify-center gap-2"
+          >
+            <UserPlus className="w-4 h-4" />
+            Cadastrar Novo Usuário
+          </button>
         </div>
       </div>
 
@@ -291,6 +363,72 @@ export function AdminScreen({ onBack }: AdminScreenProps) {
           </div>
         )}
       </div>
+
+      {/* Modal de Cadastro de Usuário */}
+      {showAddUser && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4">
+          <div className="w-full max-w-md bg-[var(--card-bg)] border border-[rgba(255,255,255,0.1)] rounded-2xl p-6">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-[18px] font-bold text-[var(--white)]">Cadastrar Usuário</h2>
+              <button
+                onClick={() => {
+                  setShowAddUser(false)
+                  setNewUserEmail('')
+                  setNewUserPassword('')
+                  setAddUserError('')
+                }}
+                className="w-8 h-8 flex items-center justify-center rounded-full bg-[rgba(255,255,255,0.05)] border-none cursor-pointer"
+              >
+                <X className="w-4 h-4 text-[var(--muted)]" />
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-[12px] text-[var(--muted)] mb-2">E-mail</label>
+                <input
+                  type="email"
+                  value={newUserEmail}
+                  onChange={(e) => setNewUserEmail(e.target.value)}
+                  placeholder="usuario@email.com"
+                  className="w-full px-4 py-3 bg-[var(--bg)] border border-[rgba(255,255,255,0.08)] rounded-xl text-[var(--white)] text-[14px] placeholder:text-[var(--muted)] outline-none focus:border-[var(--rose)]"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[12px] text-[var(--muted)] mb-2">Senha</label>
+                <input
+                  type="password"
+                  value={newUserPassword}
+                  onChange={(e) => setNewUserPassword(e.target.value)}
+                  placeholder="Mínimo 6 caracteres"
+                  className="w-full px-4 py-3 bg-[var(--bg)] border border-[rgba(255,255,255,0.08)] rounded-xl text-[var(--white)] text-[14px] placeholder:text-[var(--muted)] outline-none focus:border-[var(--rose)]"
+                />
+              </div>
+
+              {addUserError && (
+                <div className="text-[12px] text-[var(--rose)] bg-[rgba(200,80,106,0.1)] px-3 py-2 rounded-lg">
+                  {addUserError}
+                </div>
+              )}
+
+              <button
+                onClick={handleAddUser}
+                disabled={addingUser}
+                className={`
+                  w-full py-3 text-[14px] font-semibold rounded-xl cursor-pointer transition-all duration-200 border-none
+                  ${addingUser 
+                    ? 'bg-[var(--muted)] text-[var(--bg)] cursor-not-allowed' 
+                    : 'bg-[var(--gold)] text-[var(--bg)] hover:opacity-90'
+                  }
+                `}
+              >
+                {addingUser ? 'Cadastrando...' : 'Cadastrar Usuário'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

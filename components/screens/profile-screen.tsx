@@ -24,15 +24,18 @@ export function ProfileScreen({ onOpenAdmin }: ProfileScreenProps) {
   useEffect(() => {
     const checkAdmin = async () => {
       if (!user?.email) return
-      const { data: profile } = await supabase
+      const { data: profile, error } = await supabase
         .from('profiles')
         .select('is_admin')
         .eq('email', user.email.toLowerCase())
         .single()
       
+      console.log('[v0] Profile data:', profile, 'Error:', error, 'User email:', user.email)
+      
       // Aceita true (boolean) ou "TRUE"/"true" (string)
       const adminValue = profile?.is_admin
-      const isAdminUser = adminValue === true || adminValue === 'true' || adminValue === 'TRUE'
+      const isAdminUser = adminValue === true || adminValue === 'true' || adminValue === 'TRUE' || String(adminValue).toLowerCase() === 'true'
+      console.log('[v0] Admin value:', adminValue, 'Is admin:', isAdminUser)
       setIsAdmin(isAdminUser)
     }
     checkAdmin()
