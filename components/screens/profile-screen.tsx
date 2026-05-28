@@ -4,12 +4,14 @@ import { useState, useEffect } from 'react'
 import { useAppState } from '@/lib/context'
 import { archetypes } from '@/lib/data'
 import { supabase } from '@/lib/supabase'
-import { useRouter } from 'next/navigation'
 import { Shield } from 'lucide-react'
 
-export function ProfileScreen() {
+interface ProfileScreenProps {
+  onOpenAdmin?: () => void
+}
+
+export function ProfileScreen({ onOpenAdmin }: ProfileScreenProps) {
   const { state, user, logout } = useAppState()
-  const router = useRouter()
   const arq = archetypes[state.arq]
   const [isAdmin, setIsAdmin] = useState(false)
 
@@ -35,11 +37,13 @@ export function ProfileScreen() {
 
   const handleLogout = async () => {
     await logout()
-    router.push('/')
+    window.location.reload()
   }
 
   const handleOpenAdmin = () => {
-    router.push('/admin')
+    if (onOpenAdmin) {
+      onOpenAdmin()
+    }
   }
 
   return (

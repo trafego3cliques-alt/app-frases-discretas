@@ -18,9 +18,10 @@ import { PhrasesScreen } from '@/components/screens/phrases-screen'
 import { ProfileScreen } from '@/components/screens/profile-screen'
 import { ManualScreen } from '@/components/screens/manual-screen'
 import { MapaScreen } from '@/components/screens/mapa-screen'
+import { AdminScreen } from '@/components/screens/admin-screen'
 import { BottomNav } from '@/components/bottom-nav'
 
-type Screen = 'login' | 'intro' | 'diagnostic' | 'reveal' | 'dashboard' | 'day' | 'complete' | 'upsell' | 'module' | 'content' | 'phrases' | 'profile' | 'manual' | 'mapa'
+type Screen = 'login' | 'intro' | 'diagnostic' | 'reveal' | 'dashboard' | 'day' | 'complete' | 'upsell' | 'module' | 'content' | 'phrases' | 'profile' | 'manual' | 'mapa' | 'admin'
 type Tab = 'home' | 'content' | 'phrases' | 'profile'
 
 function FrasesDiscretasApp() {
@@ -126,6 +127,10 @@ function FrasesDiscretasApp() {
     setCurrentScreen(bonusId)
   }
 
+  const handleOpenAdmin = () => {
+    setCurrentScreen('admin')
+  }
+
   const handleBackToDashboard = () => {
     setCurrentScreen('dashboard')
     setCurrentTab('home')
@@ -224,7 +229,11 @@ function FrasesDiscretasApp() {
       )}
 
       {currentScreen === 'profile' && state.arq && (
-        <ProfileScreen />
+        <ProfileScreen onOpenAdmin={handleOpenAdmin} />
+      )}
+
+      {currentScreen === 'admin' && (
+        <AdminScreen onBack={handleBackToDashboard} />
       )}
 
       {currentScreen === 'manual' && (
