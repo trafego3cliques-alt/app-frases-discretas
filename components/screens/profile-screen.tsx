@@ -23,14 +23,23 @@ export function ProfileScreen({ onOpenAdmin }: ProfileScreenProps) {
   // Verificar se é admin
   useEffect(() => {
     const checkAdmin = async () => {
-      if (!user?.email) return
+      // Usar user.email ou state.email como fallback
+      const emailToCheck = user?.email || state.email
+      
+      console.log('[v0] Checking admin for email:', emailToCheck, 'user:', user?.email, 'state:', state.email)
+      
+      if (!emailToCheck) {
+        console.log('[v0] No email found, skipping admin check')
+        return
+      }
+      
       const { data: profile, error } = await supabase
         .from('profiles')
         .select('is_admin')
-        .eq('email', user.email.toLowerCase())
+        .eq('email', emailToCheck.toLowerCase())
         .single()
       
-      console.log('[v0] Profile data:', profile, 'Error:', error, 'User email:', user.email)
+      console.log('[v0] Profile data:', profile, 'Error:', error)
       
       // Aceita true (boolean) ou "TRUE"/"true" (string)
       const adminValue = profile?.is_admin
@@ -39,7 +48,7 @@ export function ProfileScreen({ onOpenAdmin }: ProfileScreenProps) {
       setIsAdmin(isAdminUser)
     }
     checkAdmin()
-  }, [user?.email])
+  }, [user?.email, state.email])
 
   const handleLogout = async () => {
     await logout()
