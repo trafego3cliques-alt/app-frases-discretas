@@ -146,16 +146,14 @@ export function ProfileScreen({ onOpenAdmin }: ProfileScreenProps) {
           <div className="text-[14px] text-[var(--white)]">{displayEmail}</div>
         </div>
 
-        {/* Botao Admin - aparece para admins ou email especifico */}
-        {(isAdmin || displayEmail?.toLowerCase() === 'laudineyarruda@gmail.com') && (
-          <button
-            onClick={handleOpenAdmin}
-            className="w-full py-3 mb-3 text-[13px] font-semibold text-[var(--gold)] bg-transparent border border-[rgba(212,164,90,0.3)] rounded-xl cursor-pointer transition-all duration-200 hover:bg-[rgba(212,164,90,0.1)] flex items-center justify-center gap-2"
-          >
-            <Shield className="w-4 h-4" />
-            Painel Administrativo
-          </button>
-        )}
+        {/* Botao Admin - sempre visivel para teste */}
+        <button
+          onClick={handleOpenAdmin}
+          className="w-full py-3 mb-3 text-[13px] font-semibold text-[var(--gold)] bg-transparent border border-[rgba(212,164,90,0.3)] rounded-xl cursor-pointer transition-all duration-200 hover:bg-[rgba(212,164,90,0.1)] flex items-center justify-center gap-2"
+        >
+          <Shield className="w-4 h-4" />
+          Painel Administrativo
+        </button>
 
         <button
           onClick={handleLogout}
