@@ -30,7 +30,10 @@ export function ProfileScreen({ onOpenAdmin }: ProfileScreenProps) {
         .eq('email', user.email.toLowerCase())
         .single()
       
-      setIsAdmin(profile?.is_admin === true)
+      // Aceita true (boolean) ou "TRUE"/"true" (string)
+      const adminValue = profile?.is_admin
+      const isAdminUser = adminValue === true || adminValue === 'true' || adminValue === 'TRUE'
+      setIsAdmin(isAdminUser)
     }
     checkAdmin()
   }, [user?.email])
