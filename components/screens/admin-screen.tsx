@@ -52,20 +52,35 @@ export function AdminScreen({ onBack }: AdminScreenProps) {
       // Carregar todos os usuários da tabela profiles
       const { data: profiles, error } = await supabase
         .from('profiles')
-        .select('id, email, created_at, arq, unlocked_modules')
+        .select('*')
         .order('created_at', { ascending: false })
 
-      if (error) throw error
+      console.log('[v0] Profiles loaded:', profiles?.length, 'Error:', error)
 
-      setUsers(profiles || [])
+      if (error) {
+        console.error('[v0] Error loading profiles:', error)
+      }
+
+      // Mapear dados usando email como ID (alguns perfis podem não ter campo id)
+      const mappedUsers: UserData[] = (profiles || []).map((p: any) => ({
+        id: p.id || p.email,
+        email: p.email,
+        created_at: p.created_at || new Date().toISOString(),
+        arq: p.arq || null,
+        unlocked_modules: p.unlocked_modules || []
+      }))
+
+      setUsers(mappedUsers)
 
       // Carregar upsells de cada usuário
-      const { data: upsellsData } = await supabase
+      const { data: upsellsData, error: upsellError } = await supabase
         .from('app_upsells')
         .select('user_email, upsell_id')
 
+      console.log('[v0] Upsells loaded:', upsellsData?.length, 'Error:', upsellError)
+
       const upsellMap: { [email: string]: UpsellStatus } = {}
-      profiles?.forEach(p => {
+      mappedUsers.forEach(p => {
         upsellMap[p.email] = {}
         allUpsells.forEach(u => {
           upsellMap[p.email][u.id] = false
@@ -79,7 +94,7 @@ export function AdminScreen({ onBack }: AdminScreenProps) {
       })
 
       // Verificar também unlocked_modules
-      profiles?.forEach(p => {
+      mappedUsers.forEach(p => {
         if (p.unlocked_modules && Array.isArray(p.unlocked_modules)) {
           p.unlocked_modules.forEach((moduleId: string) => {
             if (upsellMap[p.email]) {
