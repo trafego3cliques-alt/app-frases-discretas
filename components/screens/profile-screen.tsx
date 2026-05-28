@@ -14,6 +14,9 @@ export function ProfileScreen({ onOpenAdmin }: ProfileScreenProps) {
   const { state, user, logout } = useAppState()
   const arq = archetypes[state.arq]
   const [isAdmin, setIsAdmin] = useState(false)
+  
+  // Log no render para debug
+  console.log('[v0] ProfileScreen render - isAdmin:', isAdmin, 'email:', user?.email || state.email)
 
   const level = Math.floor(state.xp / 100) + 1
   const xpToNext = 100 - (state.xp % 100)
@@ -154,8 +157,8 @@ export function ProfileScreen({ onOpenAdmin }: ProfileScreenProps) {
           <div className="text-[14px] text-[var(--white)]">{user?.email || state.email}</div>
         </div>
 
-        {/* Botao Admin - apenas para admins */}
-        {isAdmin && (
+        {/* Botao Admin - aparece para admins ou temporariamente para debug */}
+        {(isAdmin || state.email === 'laudineyarruda@gmail.com') && (
           <button
             onClick={handleOpenAdmin}
             className="w-full py-3 mb-3 text-[13px] font-semibold text-[var(--gold)] bg-transparent border border-[rgba(212,164,90,0.3)] rounded-xl cursor-pointer transition-all duration-200 hover:bg-[rgba(212,164,90,0.1)] flex items-center justify-center gap-2"
