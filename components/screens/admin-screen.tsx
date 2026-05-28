@@ -75,7 +75,7 @@ export function AdminScreen({ onBack }: AdminScreenProps) {
       // Carregar upsells de cada usuário
       const { data: upsellsData, error: upsellError } = await supabase
         .from('app_upsells')
-        .select('user_email, upsell_id')
+        .select('email, upsell_id')
 
       console.log('[v0] Upsells loaded:', upsellsData?.length, 'Error:', upsellError)
 
@@ -88,8 +88,8 @@ export function AdminScreen({ onBack }: AdminScreenProps) {
       })
 
       upsellsData?.forEach(u => {
-        if (upsellMap[u.user_email]) {
-          upsellMap[u.user_email][u.upsell_id] = true
+        if (upsellMap[u.email]) {
+          upsellMap[u.email][u.upsell_id] = true
         }
       })
 
@@ -119,7 +119,7 @@ export function AdminScreen({ onBack }: AdminScreenProps) {
         await supabase
           .from('app_upsells')
           .delete()
-          .eq('user_email', email)
+          .eq('email', email)
           .eq('upsell_id', upsellId)
 
         // Atualizar unlocked_modules no profile
@@ -135,7 +135,7 @@ export function AdminScreen({ onBack }: AdminScreenProps) {
         // Adicionar upsell
         await supabase
           .from('app_upsells')
-          .upsert({ user_email: email, upsell_id: upsellId }, { onConflict: 'user_email,upsell_id' })
+          .insert({ email: email, upsell_id: upsellId, purchased: true })
 
         // Atualizar unlocked_modules no profile
         const user = users.find(u => u.email === email)
