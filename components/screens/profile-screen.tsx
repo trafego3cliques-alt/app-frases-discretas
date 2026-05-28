@@ -2,11 +2,11 @@
 
 import { useAppState } from '@/lib/context'
 import { archetypes } from '@/lib/data'
-import { supabase } from '@/lib/supabase'
 import { useRouter } from 'next/navigation'
 
 export function ProfileScreen() {
-  const { state, user } = useAppState()
+  const { state, user, logout } = useAppState()
+  const router = useRouter()
   const arq = archetypes[state.arq]
 
   const level = Math.floor(state.xp / 100) + 1
@@ -15,8 +15,8 @@ export function ProfileScreen() {
   const daysRemaining = 7 - daysCompleted
 
   const handleLogout = async () => {
-    await supabase.auth.signOut()
-    window.location.reload()
+    await logout()
+    router.push('/')
   }
 
   return (

@@ -56,11 +56,7 @@ export default function AdminPage() {
     try {
       const { data: { session } } = await supabase.auth.getSession()
       
-      console.log('[v0] Session:', session)
-      console.log('[v0] User email:', session?.user?.email)
-      
       if (!session?.user?.email) {
-        console.log('[v0] No session or email found')
         setIsAdmin(false)
         setIsLoading(false)
         return
@@ -69,15 +65,14 @@ export default function AdminPage() {
       // Verificar se o usuário é admin na tabela profiles
       const { data: profile, error } = await supabase
         .from('profiles')
-        .select('is_admin, email')
+        .select('is_admin')
         .eq('email', session.user.email.toLowerCase())
         .single()
 
-      console.log('[v0] Profile query result:', profile)
-      console.log('[v0] Profile query error:', error)
-      console.log('[v0] is_admin value:', profile?.is_admin)
+      // Verificar se is_admin é true (aceitar true ou 'true')
+      const adminStatus = profile?.is_admin === true || profile?.is_admin === 'true'
 
-      if (profile?.is_admin) {
+      if (adminStatus) {
         setIsAdmin(true)
         await loadUsers()
       } else {
