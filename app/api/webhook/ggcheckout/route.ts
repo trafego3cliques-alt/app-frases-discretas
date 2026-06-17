@@ -1,23 +1,23 @@
 import { createClient } from '@supabase/supabase-js'
 import { NextRequest, NextResponse } from 'next/server'
+import crypto from 'crypto'
 
 // ═══════════════════════════════════════════════
-// MAPEAMENTO — preencher com IDs reais da Lastlink
+// MAPEAMENTO — preencher com os IDs reais dos produtos na GGCheckout
+// A chave é o product.id que a GGCheckout envia no payload do webhook.
 // ═══════════════════════════════════════════════
 const PRODUCT_MAP: Record<string, string> = {
   // Produto principal - FRASES DISCRETAS
-  'CA6FD38F4':  'main',
-  
-  // Upsells - IDs extraídos dos links de checkout da Lastlink
-  'C80C4E7D4':  'fp',   // FRASES PROIBIDAS
-  'CE4431112':  'pr',   // PROTOCOLO RECONEXÃO
-  'C60C7E44A':  'sc',   // SISTEMA DE CALIBRAÇÃO AVANÇADO
-  'C800BE5DE':  'ap',   // AMPLIFICADORES DE PRESENÇA
-  'C3B667D54':  'ab',   // A ARTE DA ABERTURA SEGURA
+  // 'prod_xxxxx': 'main',
+
+  // Upsells / módulos extras
+  // 'prod_xxxxx': 'fp',   // FRASES PROIBIDAS
+  // 'prod_xxxxx': 'pr',   // PROTOCOLO RECONEXÃO
+  // 'prod_xxxxx': 'sc',   // SISTEMA DE CALIBRAÇÃO AVANÇADO
+  // 'prod_xxxxx': 'ap',   // AMPLIFICADORES DE PRESENÇA
+  // 'prod_xxxxx': 'ab',   // A ARTE DA ABERTURA SEGURA
 
   // O TROCO - checkout em pagamento.frasesdiscretas.shop
-  // ID do produto no link de checkout: p7a3xL0p4DLGVc6wY9iw
-  // Ajuste a chave abaixo para o productId real que a plataforma envia no webhook
   'p7a3xL0p4DLGVc6wY9iw': 'tr',  // O TROCO
 }
 
@@ -34,52 +34,64 @@ if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY) {
 }
 
 // Cliente Supabase com service role (bypass de RLS e criação de usuários auth)
-const supabaseAdmin = createClient(
-  SUPABASE_URL,
-  SUPABASE_SERVICE_KEY
-)
+const supabaseAdmin = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY)
 
 export async function POST(req: NextRequest) {
-  // Verificar assinatura da Lastlink (opcional - descomente em produção)
-  // const secret = process.env.LASTLINK_SECRET
-  // if (secret) {
-  //   const signature = req.headers.get('x-lastlink-signature') || ''
-  //   if (signature !== secret) {
-  //     console.error('[Webhook] Assinatura inválida')
-  //     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  //   }
-  // }
+  // Ler o corpo bruto (necessário para validar a assinatura HMAC)
+  const rawBody = await req.text()
+
+  // Verificar assinatura da GGCheckout (opcional - defina GGCHECKOUT_WEBHOOK_SECRET para ativar)
+  const secret = process.env.GGCHECKOUT_WEBHOOK_SECRET
+  if (secret) {
+    const signatureHeader = req.headers.get('x-webhook-signature') || ''
+    const expected =
+      'sha256=' + crypto.createHmac('sha256', secret).update(rawBody).digest('hex')
+    if (signatureHeader !== expected) {
+      console.error('[Webhook] Assinatura inválida')
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+  }
 
   // Parsear payload
   let payload: any
   try {
-    payload = await req.json()
+    payload = JSON.parse(rawBody)
   } catch {
     return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 })
   }
 
   console.log('[Webhook] Recebido:', JSON.stringify(payload))
 
-  // Ignorar eventos que não são de pagamento confirmado
-  const evento = payload.event || payload.status || ''
-  if (!['purchase.approved', 'payment.approved', 'approved'].includes(evento)) {
-    console.log('[Webhook] Evento ignorado:', evento)
+  // A GGCheckout aninha os dados em "payment". Suportamos também formato achatado.
+  const payment = payload.payment || payload
+
+  // Só processar pagamentos confirmados
+  const evento = (payload.event || '').toString()
+  const status = (payment.status || payload.status || '').toString().toLowerCase()
+  const aprovado =
+    evento === 'payment.paid' ||
+    ['paid', 'approved', 'completed'].includes(status)
+
+  if (!aprovado) {
+    console.log('[Webhook] Evento ignorado:', evento || status)
     return NextResponse.json({ ok: true, msg: 'evento ignorado' })
   }
 
-  // Extrair dados do payload
-  // Adaptar conforme estrutura real da Lastlink
+  // Extrair email do cliente
   const email = (
+    payment.customer?.email ||
     payload.customer?.email ||
-    payload.buyer?.email ||
     payload.email ||
     ''
-  ).toLowerCase().trim()
+  )
+    .toLowerCase()
+    .trim()
 
+  // Extrair ID do produto
   const productId = (
+    payment.product?.id ||
     payload.product?.id ||
     payload.product_id ||
-    payload.item?.id ||
     ''
   ).toString()
 
@@ -100,20 +112,15 @@ export async function POST(req: NextRequest) {
 
   try {
     if (modulo === 'main') {
-      // ═══ COMPRA DO PRODUTO PRINCIPAL ═══
       await handleMainPurchase(email)
     } else {
-      // ═══ COMPRA DE UPSELL ═══
       await handleUpsellPurchase(email, modulo)
     }
 
     return NextResponse.json({ ok: true, email, modulo })
   } catch (err) {
     console.error('[Webhook] Erro ao processar:', err)
-    return NextResponse.json(
-      { ok: false, error: String(err) },
-      { status: 500 }
-    )
+    return NextResponse.json({ ok: false, error: String(err) }, { status: 500 })
   }
 }
 
@@ -125,10 +132,9 @@ async function handleMainPurchase(email: string) {
 
   // 1. Criar usuário no Supabase Auth (se não existir)
   try {
-    // Buscar usuário existente via listUsers com filtro
     const { data: listData } = await supabaseAdmin.auth.admin.listUsers()
-    const existingUser = listData?.users?.find(u => u.email === email)
-    
+    const existingUser = listData?.users?.find((u) => u.email === email)
+
     if (!existingUser) {
       const { error: authError } = await supabaseAdmin.auth.admin.createUser({
         email,
@@ -162,7 +168,6 @@ async function handleMainPurchase(email: string) {
     })
     console.log('[Webhook] Profile criado:', email)
   } else {
-    // Garantir que 'main' está nos módulos desbloqueados
     const modules = existingProfile.unlocked_modules || []
     if (!modules.includes('main')) {
       await supabaseAdmin
@@ -222,7 +227,6 @@ async function handleUpsellPurchase(email: string, modulo: string) {
         .eq('email', email)
     }
   } else {
-    // Criar profile se não existir (caso raro)
     await supabaseAdmin.from('profiles').insert({
       email,
       unlocked_modules: [modulo],
