@@ -702,6 +702,19 @@ export const upsells: Record<ArchetypeKey, Upsell[]> = {
       de: 'R$49',
       por: 'R$9',
       url: '#'
+    },
+    {
+      id: 'tr-e',
+      day: 5,
+      cel: '♟️',
+      congrats: 'O troco<br><em>certo.</em>',
+      bridge: 'Você já domina a espera estratégica. Este módulo vai além: os movimentos exatos para inverter a dinâmica quando ele some, esfria ou volta como se nada tivesse acontecido.',
+      title: 'O Troco',
+      sub: '21 movimentos psicológicos para inverter qualquer dinâmica — sem mágoa, sem ansiedade, sem espera.',
+      items: ['Os 5 movimentos para quando ele some sem avisar', 'Como reagir ao "oi sumida" sem cobrar nem validar', 'O que fazer quando a conexão esfria gradualmente', 'Como reconectar sem parecer que estava esperando'],
+      de: 'R$29',
+      por: 'R$9',
+      url: '#'
     }
   ],
   I: [
@@ -728,6 +741,19 @@ export const upsells: Record<ArchetypeKey, Upsell[]> = {
       sub: 'O próximo nível para A Intensidade — situações complexas, soluções precisas.',
       items: ['Como calibrar quando a emoção é muito real para conter', 'O mapa completo de timing para cada tipo de situação', 'Quando intensidade é necessária versus quando prejudica', 'As frases que entregam muito em muito pouco'],
       de: 'R$49',
+      por: 'R$9',
+      url: '#'
+    },
+    {
+      id: 'tr-i',
+      day: 5,
+      cel: '♟️',
+      congrats: 'O troco<br><em>certo.</em>',
+      bridge: 'Sua intensidade já é precisão. Este módulo dá os movimentos exatos para inverter a dinâmica quando ele some, esfria ou volta como se nada tivesse acontecido.',
+      title: 'O Troco',
+      sub: '21 movimentos psicológicos para inverter qualquer dinâmica — sem mágoa, sem ansiedade, sem espera.',
+      items: ['Os 5 movimentos para quando ele some sem avisar', 'Como reagir ao "oi sumida" sem cobrar nem validar', 'O que fazer quando a conexão esfria gradualmente', 'Como reconectar sem parecer que estava esperando'],
+      de: 'R$29',
       por: 'R$9',
       url: '#'
     }
@@ -758,6 +784,19 @@ export const upsells: Record<ArchetypeKey, Upsell[]> = {
       de: 'R$49',
       por: 'R$9',
       url: '#'
+    },
+    {
+      id: 'tr-c',
+      day: 5,
+      cel: '♟️',
+      congrats: 'O troco<br><em>certo.</em>',
+      bridge: 'Você já abre de forma estratégica. Este módulo dá os movimentos exatos para inverter a dinâmica quando ele some, esfria ou volta como se nada tivesse acontecido.',
+      title: 'O Troco',
+      sub: '21 movimentos psicológicos para inverter qualquer dinâmica — sem mágoa, sem ansiedade, sem espera.',
+      items: ['Os 5 movimentos para quando ele some sem avisar', 'Como reagir ao "oi sumida" sem cobrar nem validar', 'O que fazer quando a conexão esfria gradualmente', 'Como reconectar sem parecer que estava esperando'],
+      de: 'R$29',
+      por: 'R$9',
+      url: '#'
     }
   ],
   P: [
@@ -784,6 +823,19 @@ export const upsells: Record<ArchetypeKey, Upsell[]> = {
       sub: 'O nível avançado para A Presença — os elementos que criam presença verdadeiramente magnética.',
       items: ['A imprevisibilidade controlada em situações avançadas', 'Como criar tensão que sustenta o desejo no longo prazo', 'O vocabulário de profundidade para conversas que ficam', 'As frases que fazem ele pensar em você muito depois'],
       de: 'R$49',
+      por: 'R$9',
+      url: '#'
+    },
+    {
+      id: 'tr-p',
+      day: 5,
+      cel: '♟️',
+      congrats: 'O troco<br><em>certo.</em>',
+      bridge: 'Sua presença já é magnética. Este módulo dá os movimentos exatos para inverter a dinâmica quando ele some, esfria ou volta como se nada tivesse acontecido.',
+      title: 'O Troco',
+      sub: '21 movimentos psicológicos para inverter qualquer dinâmica — sem mágoa, sem ansiedade, sem espera.',
+      items: ['Os 5 movimentos para quando ele some sem avisar', 'Como reagir ao "oi sumida" sem cobrar nem validar', 'O que fazer quando a conexão esfria gradualmente', 'Como reconectar sem parecer que estava esperando'],
+      de: 'R$29',
       por: 'R$9',
       url: '#'
     }

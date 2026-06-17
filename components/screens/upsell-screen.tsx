@@ -30,6 +30,11 @@ const CHECKOUT_URLS: Record<string, string> = {
   'ab-i': 'https://lastlink.com/p/C3B667D54/checkout-payment/',
   'ab-c': 'https://lastlink.com/p/C3B667D54/checkout-payment/',
   'ab-p': 'https://lastlink.com/p/C3B667D54/checkout-payment/',
+  // O Troco - prefixo 'tr'
+  'tr-e': 'https://pagamento.frasesdiscretas.shop/checkout/v3/p7a3xL0p4DLGVc6wY9iw',
+  'tr-i': 'https://pagamento.frasesdiscretas.shop/checkout/v3/p7a3xL0p4DLGVc6wY9iw',
+  'tr-c': 'https://pagamento.frasesdiscretas.shop/checkout/v3/p7a3xL0p4DLGVc6wY9iw',
+  'tr-p': 'https://pagamento.frasesdiscretas.shop/checkout/v3/p7a3xL0p4DLGVc6wY9iw',
 }
 
 interface UpsellScreenProps {
