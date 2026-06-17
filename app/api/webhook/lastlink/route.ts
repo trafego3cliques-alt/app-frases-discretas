@@ -14,6 +14,11 @@ const PRODUCT_MAP: Record<string, string> = {
   'C60C7E44A':  'sc',   // SISTEMA DE CALIBRAÇÃO AVANÇADO
   'C800BE5DE':  'ap',   // AMPLIFICADORES DE PRESENÇA
   'C3B667D54':  'ab',   // A ARTE DA ABERTURA SEGURA
+
+  // O TROCO - checkout em pagamento.frasesdiscretas.shop
+  // ID do produto no link de checkout: p7a3xL0p4DLGVc6wY9iw
+  // Ajuste a chave abaixo para o productId real que a plataforma envia no webhook
+  'p7a3xL0p4DLGVc6wY9iw': 'tr',  // O TROCO
 }
 
 const SENHA_PADRAO = 'discreta2025'
