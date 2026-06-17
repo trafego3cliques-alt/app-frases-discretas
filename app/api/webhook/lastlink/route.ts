@@ -18,14 +18,17 @@ const PRODUCT_MAP: Record<string, string> = {
 
 const SENHA_PADRAO = 'discreta2025'
 
-// Supabase URL e anon key (mesma do lib/supabase.ts)
-const SUPABASE_URL = 'https://gyiauyqkjukbabtxnkdn.supabase.co'
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd5aWF1eXFranVrYmFidHhua2RuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDU5OTc5MzMsImV4cCI6MjA2MTU3MzkzM30.iSGNhPHmJMvmWDmOFjCs0DOZ98fNO-eJVbXStzBLDYY'
+// Supabase URL e service role key vindos das variáveis de ambiente
+const SUPABASE_URL = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL
+const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY
 
-// Service role key - permite bypass de RLS e criar usuários auth
-const SUPABASE_SERVICE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd5aWF1eXFranVrYmFidHhua2RuIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NzM4MDAxMSwiZXhwIjoyMDkyOTU2MDExfQ.kHztEIwqBfXTuT9J1iuONL9YTJ1NZveRTYid5H-Lghg'
+if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY) {
+  throw new Error(
+    'Variáveis de ambiente do Supabase ausentes. Defina SUPABASE_URL e SUPABASE_SERVICE_ROLE_KEY.'
+  )
+}
 
-// Cliente Supabase
+// Cliente Supabase com service role (bypass de RLS e criação de usuários auth)
 const supabaseAdmin = createClient(
   SUPABASE_URL,
   SUPABASE_SERVICE_KEY

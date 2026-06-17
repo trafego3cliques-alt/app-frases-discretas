@@ -114,6 +114,19 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
           <Lock size={12} />
           Acesso exclusivo para compradores
         </p>
+
+        {/* Instruções de primeiro acesso */}
+        <div className="mt-6 pt-5 border-t border-white/10 text-center">
+          <p className="text-[#d4a45a] text-xs font-semibold mb-2">Primeiro acesso:</p>
+          <p className="text-[#8a7a76] text-xs leading-relaxed">
+            Login: <span className="text-[#e0d4d0]">e-mail de compra</span>
+            <br />
+            Senha: <span className="text-[#e0d4d0]">discreta2025</span>
+          </p>
+          <p className="text-[#8a7a76] text-xs leading-relaxed mt-2">
+            Altere a senha no primeiro acesso
+          </p>
+        </div>
       </form>
     </div>
   )
